@@ -29,6 +29,11 @@ jobs:
                       "title": "Requested Reviewers",
                       "value": "${{ (join(github.event.pull_request.requested_reviewers.*.login, ', ') != '' && join(github.event.pull_request.requested_reviewers.*.login, ', ')) || 'None' }}${{ join(github.event.pull_request.requested_teams.*.name, ', ') != '' && format('\nTeams: {0}', join(github.event.pull_request.requested_teams.*.name, ', ')) || '' }}",
                       "short": false
+                    },
+                    {
+                      "title": "Description",
+                      "value": "${{ github.event.pull_request.body || 'No description provided' }}",
+                      "short": false
                     }
                   ]
                 }
