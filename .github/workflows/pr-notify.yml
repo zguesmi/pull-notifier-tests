@@ -15,5 +15,45 @@ jobs:
         with:
           payload: |
             {
-              "text": ":loudspeaker: *Pull Request Ready for Review!*\n\n:point_right: *${{ github.event.pull_request.title }} [#${{ github.event.pull_request.number }}](${{ github.event.pull_request.html_url }})*\n\n• *Author:* `${{ github.event.pull_request.user.login }}`\n• *Base branch:* `${{ github.event.pull_request.base.ref }}`\n• *Reviewers:* ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') || 'None' }}\n\n*Description:*\n${{ github.event.pull_request.body || 'No description provided' }}"
+              "text": "Pull Request Ready for Review",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":loudspeaker: Pull Request Ready for Review"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":point_right: *<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }} [#${{ github.event.pull_request.number }}]>*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:*\n${{ github.event.pull_request.user.login }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Base Branch:*\n${{ github.event.pull_request.base.ref }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Reviewers:*\n${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') || 'None' }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Description:*\n${{ github.event.pull_request.body || 'No description provided' }}"
+                  }
+                }
+              ]
             }
