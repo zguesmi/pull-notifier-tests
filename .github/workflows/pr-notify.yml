@@ -15,51 +15,10 @@ jobs:
         with:
           payload: |
             {
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "📣 Pull Request Ready for Review",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>*\nby *${{ github.event.pull_request.user.login }}*"
-                  }
-                },
-                {
-                  "type": "context",
-                  "elements": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Base branch:* `${{ github.event.pull_request.base.ref }}`"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Reviewers:* ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') || 'None' }}"
-                    }
-                  ]
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "Open PR",
-                        "emoji": true
-                      },
-                      "url": "${{ github.event.pull_request.html_url }}"
-                    }
-                  ]
-                }
-              ]
+              "mrkdwn": true,
+              "text": ":loudspeaker: *Pull Request Ready for Review!*\n\n" +
+                      ":point_right: *<${{ github.event.pull_request.title }} [#${{ github.event.pull_request.number }}](<${{ github.event.pull_request.html_url }}>)>*\n" +
+                      "• *Author:* `${{ github.event.pull_request.user.login }}`\n" +
+                      "• *Base branch:* `${{ github.event.pull_request.base.ref }}`\n" +
+                      "• *Reviewers:* ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') || 'None' }}\n\n"
             }
