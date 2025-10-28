@@ -17,22 +17,22 @@ jobs:
               "attachments": [
                 {
                   "color": "#ff9500",
-                  "title": "${{ github.event.pull_request.title }}",
+                  "title": ${{ toJSON(github.event.pull_request.title) }},
                   "title_link": "${{ github.event.pull_request.html_url }}",
                   "fields": [
                     {
                       "title": "Author",
-                      "value": "${{ github.event.pull_request.user.login }}",
+                      "value": ${{ toJSON(github.event.pull_request.user.login) }},
                       "short": true
                     },
                     {
                       "title": "Requested Reviewers",
-                      "value": "${{ (join(github.event.pull_request.requested_reviewers.*.login, ', ') != '' && join(github.event.pull_request.requested_reviewers.*.login, ', ')) || 'None' }}${{ join(github.event.pull_request.requested_teams.*.name, ', ') != '' && format('\nTeams: {0}', join(github.event.pull_request.requested_teams.*.name, ', ')) || '' }}",
+                      "value": ${{ toJSON((join(github.event.pull_request.requested_reviewers.*.login, ', ') != '' && join(github.event.pull_request.requested_reviewers.*.login, ', ')) || 'None') }},
                       "short": false
                     },
                     {
                       "title": "Description",
-                      "value": "${{ github.event.pull_request.body || 'No description provided' }}",
+                      "value": ${{ toJSON(github.event.pull_request.body || 'No description provided') }},
                       "short": false
                     }
                   ]
