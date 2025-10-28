@@ -10,34 +10,56 @@ jobs:
     steps:
       - name: Send notification to Slack
         uses: slackapi/slack-github-action@v1.27.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         with:
           payload: |
             {
-              "text": "📣 Review requested for Pull Request!",
-              "attachments": [
+              "blocks": [
                 {
-                  "color": "#ff9500",
-                  "title": ${{ toJSON(github.event.pull_request.title) }},
-                  "title_link": "${{ github.event.pull_request.html_url }}",
-                  "fields": [
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "📣 Pull Request Ready for Review",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>*\nby *${{ github.event.pull_request.user.login }}*"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
                     {
-                      "title": "Author",
-                      "value": ${{ toJSON(github.event.pull_request.user.login) }},
-                      "short": true
+                      "type": "mrkdwn",
+                      "text": "*Base branch:* `${{ github.event.pull_request.base.ref }}`"
                     },
                     {
-                      "title": "Requested Reviewers",
-                      "value": ${{ toJSON((join(github.event.pull_request.requested_reviewers.*.login, ', ') != '' && join(github.event.pull_request.requested_reviewers.*.login, ', ')) || 'None') }},
-                      "short": false
-                    },
+                      "type": "mrkdwn",
+                      "text": "*Reviewers:* ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') || 'None' }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "actions",
+                  "elements": [
                     {
-                      "title": "Description",
-                      "value": ${{ toJSON(github.event.pull_request.body || 'No description provided') }},
-                      "short": false
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Open PR",
+                        "emoji": true
+                      },
+                      "url": "${{ github.event.pull_request.html_url }}"
                     }
                   ]
                 }
               ]
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
