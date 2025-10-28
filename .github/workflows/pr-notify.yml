@@ -1,0 +1,38 @@
+name: Notify Slack when PR Review is Requested
+
+on:
+  pull_request:
+    types: [ready_for_review, review_requested]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send notification to Slack
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {
+              "text": "📣 Review requested for Pull Request!",
+              "attachments": [
+                {
+                  "color": "#ff9500",
+                  "title": "${{ github.event.pull_request.title }}",
+                  "title_link": "${{ github.event.pull_request.html_url }}",
+                  "fields": [
+                    {
+                      "title": "Author",
+                      "value": "${{ github.event.pull_request.user.login }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Requested Reviewers",
+                      "value": "${{ (join(github.event.pull_request.requested_reviewers.*.login, ', ') != '' && join(github.event.pull_request.requested_reviewers.*.login, ', ')) || 'None' }}${{ join(github.event.pull_request.requested_teams.*.name, ', ') != '' && format('\nTeams: {0}', join(github.event.pull_request.requested_teams.*.name, ', ')) || '' }}",
+                      "short": false
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
