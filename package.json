@@ -1,0 +1,21 @@
+{
+  "name": "pull-notifier-tests",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "rollup --config rollup.config.js"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.1",
+    "@slack/web-api": "^7.12.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "rollup": "^4.52.5"
+  },
+  "license": "Apache-2.0",
+  "description": ""
+}
