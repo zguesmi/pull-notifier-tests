@@ -1,16 +1,14 @@
-name: Hello World
-description: Greet someone and record the time
+name: "Slack PR Notifier"
+description: "Notify a Slack channel when a PR is ready for review"
 
 inputs:
-  who-to-greet: # id of input
-    description: Who to greet
+  slack-token:
+    description: "Slack bot token (xoxb-...)"
     required: true
-    default: World
-
-outputs:
-  time: # id of output
-    description: The time we greeted you
+  channel:
+    description: "Slack channel ID (e.g., C12345678)"
+    required: true
 
 runs:
-  using: node20
-  main: dist/index.js
+  using: "node20"
+  main: "dist/index.js"
