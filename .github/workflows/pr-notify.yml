@@ -2,7 +2,9 @@ name: Notify reviewers
 
 on:
   pull_request:
-    types: [ready_for_review, review_requested]
+    types:
+      - ready_for_review
+      - review_requested
 
 jobs:
   notify:
@@ -13,6 +15,9 @@ jobs:
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK }}
           webhook-type: incoming-webhook
+          # Note:
+          # The PR description (body) is not included because GitHub and Slack use different
+          # markdown dialects (e.g., Links are not rendered the same way).
           payload: |
             {
               "blocks": [
@@ -20,7 +25,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":git: PR ready for review - [${{ github.event.repository.name }}]"
+                    "text": ":git: PR ready for review - <${{ github.event.repository.html_url }} | ${{ github.event.repository.full_name }}>"
                   }
                 },
                 {
@@ -34,14 +39,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Author*: ${{ github.event.pull_request.user.login }}\n*Reviewers*: ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Description*:\n${{ github.event.pull_request.body }}"
+                    "text": "*Repository*: <${{ github.event.repository.html_url }} | ${{ github.event.repository.full_name }}> \n *Author*: ${{ github.event.pull_request.user.login }} \n *Reviewers*: ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}"
                   }
                 }
               ]
