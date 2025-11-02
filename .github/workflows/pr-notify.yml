@@ -10,6 +10,42 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Get Slack IDs for PR author and reviewers
+        id: get-slack-ids
+        env:
+          # Store a JSON mapping in GITHUB_TO_SLACK_ID_MAP secret like:
+          # {"github_username1": "U12345678", "github_username2": "U87654321"}
+          GITHUB_TO_SLACK_ID_MAP: ${{ secrets.GITHUB_TO_SLACK_ID_MAP }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_REVIEWERS: ${{ toJSON(github.event.pull_request.requested_reviewers.*.login) }}
+        run: |
+          # Get Slack member ID from GitHub username and fallback to GitHub username.
+          get_slack_id() {
+              local github_user=$1
+              local slack_id=$(echo "$GITHUB_TO_SLACK_ID_MAP" | jq -r --arg user "$github_user" '.[$user] // empty')
+              if [ -n "$slack_id" ]; then
+                  echo "<@$slack_id>"
+                  return
+              fi
+              echo "$github_user"
+          }
+          # Get PR author Slack member ID.
+          PR_AUTHOR_SLACK_ID=$(get_slack_id "$PR_AUTHOR")
+          echo "pr_author_slack_id=$PR_AUTHOR_SLACK_ID" >> $GITHUB_OUTPUT
+          # Get PR reviewers Slack member IDs.
+          if [ "$PR_REVIEWERS" = "[]" ] || [ -z "$PR_REVIEWERS" ]; then
+              echo "pr_reviewers_slack_ids=" >> $GITHUB_OUTPUT
+              return
+          fi
+          SLACK_IDS=""
+          for reviewer in $(echo "$PR_REVIEWERS" | jq -r '.[]'); do
+              SLACK_ID=$(get_slack_id "$reviewer")
+              SLACK_IDS="$SLACK_IDS$SLACK_ID, "
+          done
+          # Remove trailing comma and space.
+          SLACK_IDS="${SLACK_IDS%, }"
+          echo "pr_reviewers_slack_ids=$SLACK_IDS" >> $GITHUB_OUTPUT
+
       - name: Send notification to Slack
         uses: slackapi/slack-github-action@v2.1.1
         with:
@@ -39,7 +75,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Repository*: <${{ github.event.repository.html_url }} | ${{ github.event.repository.full_name }}> \n *Author*: ${{ github.event.pull_request.user.login }} \n *Reviewers*: ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}"
+                    "text": "*Repository*: <${{ github.event.repository.html_url }} | ${{ github.event.repository.full_name }}> \n *Author*: ${{ steps.get-slack-ids.outputs.pr_author_slack_id }} \n *Reviewers*: ${{ steps.get-slack-ids.outputs.pr_reviewers_slack_ids }}"
                   }
                 }
               ]
