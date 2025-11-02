@@ -1,0 +1,92 @@
+import * as core from "@actions/core";
+import * as github from "@actions/github";
+import { WebClient } from '@slack/web-api';
+
+type SlackIdsMap = {
+    [githubUsername: string]: string | undefined;
+};
+
+const env = {
+    slackMemberIdsMap: process.env.SLACK_MEMBER_IDS_MAP,
+    slackBotToken: process.env.SLACK_BOT_TOKEN,
+    slackChannelId: process.env.SLACK_CHANNEL_ID
+}
+
+async function run() {
+    const githubRepository = github.context.payload.repository;
+    const githubPullRequest = github.context.payload.pull_request;
+    if (!githubRepository || !githubPullRequest) {
+        core.setFailed("No context found.");
+        return;
+    }
+    const prAuthorUsername = githubPullRequest.user?.login;
+    const prReviewersUsernames = githubPullRequest.requested_reviewers?.map(
+        (reviewer: any) => reviewer.login
+    );
+    const prAuthor = await getSlackIdMentionOrGithubUsername(prAuthorUsername);
+    const prReviewers = await Promise.all(prReviewersUsernames.map(getSlackIdMentionOrGithubUsername));
+    core.info(`PR Author: ${prAuthor}`);
+    core.info(`PR Reviewers: ${prReviewers.join(', ')}`);
+    const slackMessageBlocks = [
+        {
+            type: "header",
+            text: {
+                type: "plain_text",
+                text: `:git: PR ready for review — ${githubPullRequest.title}`,
+                emoji: true
+            }
+        },
+        {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: `*${githubPullRequest.title}* <${githubPullRequest.html_url} | #${githubPullRequest.number}>`
+            }
+        },
+        {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: `*Repository*: <${ githubRepository.html_url} | ${githubRepository.full_name}>\n`
+                    + `*Author*: ${ prAuthor }\n`
+                    + `*Reviewers*: ${ prReviewers.join(', ') }`
+            }
+        }
+    ]
+    core.info(`Slack Message: ${JSON.stringify(slackMessageBlocks, null, 2)}`);
+    sendSlackMessage(slackMessageBlocks);
+}
+
+/**
+ * Get the Slack ID for a GitHub user.
+ * @param githubUsername - The GitHub username.
+ * @returns - The Slack ID or the GitHub username if not found.
+ */
+async function getSlackIdMentionOrGithubUsername(githubUsername: string): Promise<string> {
+    const slackIdsMap: SlackIdsMap = JSON.parse(env.slackMemberIdsMap || '{}');
+    const slackId = slackIdsMap[githubUsername];
+    return slackId ? `<@${slackId}>` : githubUsername;
+}
+
+async function sendSlackMessage(slackMessageBlocks: any[]) {
+    const slackToken = env.slackBotToken;
+    if (!slackToken) {
+        core.setFailed('SLACK_BOT_TOKEN is not set.');
+        return;
+    }
+    const slackClient = new WebClient(slackToken);
+    const slackChannel = env.slackChannelId;
+    if (!slackChannel) {
+        core.setFailed('SLACK_CHANNEL_ID is not set.');
+        return;
+    }
+    await slackClient.chat.postMessage({
+        channel: slackChannel,
+        blocks: slackMessageBlocks,
+    });
+    core.info('Slack message sent successfully.');
+}
+
+if (require.main === module) {
+    run();
+}
