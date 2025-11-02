@@ -1,0 +1,32 @@
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": ":git: PR ready for review - [PoCo]"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*docs: Update README.md because it's cool `code`* <https://github.com/zguesmi/pull-notifier-tests/pull/2 | #2>"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Author*: username\n*Reviewers*: username1, username2"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Description*:\nSome good description going heer `abc`"
+      }
+    }
+  ]
+}
