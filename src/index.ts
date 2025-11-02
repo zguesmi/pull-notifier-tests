@@ -14,45 +14,46 @@ const env = {
 
 async function run() {
     const githubRepository = github.context.payload.repository;
-    const githubPullRequest = github.context.payload.pull_request;
-    if (!githubRepository || !githubPullRequest) {
-        core.setFailed("No context found.");
+    const pr = github.context.payload.pull_request;
+    if (!githubRepository || !pr) {
+        core.setFailed('No context found.');
         return;
     }
-    const prAuthorUsername = githubPullRequest.user?.login;
-    const prReviewersUsernames = githubPullRequest.requested_reviewers?.map(
-        (reviewer: any) => reviewer.login
-    );
+    const prAuthorUsername = pr.user?.login;
+    const prReviewersUsernames = pr.requested_reviewers?.map((reviewer: any) => reviewer.login);
     const prAuthor = await getSlackIdMentionOrGithubUsername(prAuthorUsername);
-    const prReviewers = await Promise.all(prReviewersUsernames.map(getSlackIdMentionOrGithubUsername));
+    const prReviewers = await Promise.all(
+        prReviewersUsernames.map(getSlackIdMentionOrGithubUsername),
+    );
     core.info(`PR Author: ${prAuthor}`);
     core.info(`PR Reviewers: ${prReviewers.join(', ')}`);
     const slackMessageBlocks = [
         {
-            type: "header",
+            type: 'header',
             text: {
-                type: "plain_text",
-                text: `:git: PR ready for review — ${githubPullRequest.title}`,
-                emoji: true
-            }
+                type: 'plain_text',
+                text: `:git: PR ready for review — ${pr.title}`,
+                emoji: true,
+            },
         },
         {
-            type: "section",
+            type: 'section',
             text: {
-                type: "mrkdwn",
-                text: `*${githubPullRequest.title}* <${githubPullRequest.html_url} | #${githubPullRequest.number}>`
-            }
+                type: 'mrkdwn',
+                text: `*${pr.title}* <${pr.html_url} | #${pr.number}>`,
+            },
         },
         {
-            type: "section",
+            type: 'section',
             text: {
-                type: "mrkdwn",
-                text: `*Repository*: <${ githubRepository.html_url} | ${githubRepository.full_name}>\n`
-                    + `*Author*: ${ prAuthor }\n`
-                    + `*Reviewers*: ${ prReviewers.join(', ') }`
-            }
-        }
-    ]
+                type: 'mrkdwn',
+                text:
+                    `*Repository*: <${githubRepository.html_url} | ${githubRepository.full_name}>\n` +
+                    `*Author*: ${prAuthor}\n` +
+                    `*Reviewers*: ${prReviewers.join(', ')}`,
+            },
+        },
+    ];
     core.info(`Slack Message: ${JSON.stringify(slackMessageBlocks, null, 2)}`);
     sendSlackMessage(slackMessageBlocks);
 }
