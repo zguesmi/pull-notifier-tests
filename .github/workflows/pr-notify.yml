@@ -24,7 +24,7 @@ jobs:
                 {
                   "type": "header",
                   "text": {
-                    "type": "mrkdwn",
+                    "type": "plain_text",
                     "text": ":git: PR ready for review - <${{ github.event.repository.html_url }} | ${{ github.event.repository.full_name }}>"
                   }
                 },
