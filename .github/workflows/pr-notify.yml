@@ -61,7 +61,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":git: PR ready for review - ${{ github.event.repository.full_name }}"
+                    "text": ":git: PR ready for review — ${{ github.event.repository.full_name }}"
                   }
                 },
                 {
