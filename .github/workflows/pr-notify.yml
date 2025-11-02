@@ -15,13 +15,13 @@ jobs:
         with:
           payload: |
             {
-              "text": "Pull Request Ready for Review",
+              "text": "Pull request ready for review (text)",
               "blocks": [
                 {
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":loudspeaker: Pull Request Ready for Review"
+                    "text": ":git: Pull request ready for review"
                   }
                 },
                 {
