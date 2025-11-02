@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send notification to Slack
-        uses: slackapi/slack-github-action@v1.27.0
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        uses: slackapi/slack-github-action@v2.1.1
         with:
+          webhook: ${{ secrets.SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "blocks": [
@@ -20,38 +20,28 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":git: Pull request ready for review"
+                    "text": ":git: PR ready for review - [PoCo]"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":point_right: *<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }} [#${{ github.event.pull_request.number }}]>*"
+                    "text": "*docs: Update README.md because it's cool `code`* <https://github.com/zguesmi/pull-notifier-tests/pull/2 | #2>"
                   }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Author:*\n${{ github.event.pull_request.user.login }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Base Branch:*\n${{ github.event.pull_request.base.ref }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Reviewers:*\n${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') || 'None' }}"
-                    }
-                  ]
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Description:*\n${{ github.event.pull_request.body || 'No description provided' }}"
+                    "text": "*Author*: username\n*Reviewers*: username1, username2"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Description*:\nSome good description going heer `abc`"
                   }
                 }
               ]
