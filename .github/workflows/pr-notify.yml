@@ -13,16 +13,16 @@ jobs:
       - name: Get Slack IDs for PR author and reviewers
         id: get-slack-ids
         env:
-          # Store a JSON mapping in GITHUB_TO_SLACK_ID_MAP secret like:
+          # Store a JSON mapping in SLACK_MEMBER_IDS_MAP secret like:
           # {"github_username1": "U12345678", "github_username2": "U87654321"}
-          GITHUB_TO_SLACK_ID_MAP: ${{ secrets.GITHUB_TO_SLACK_ID_MAP }}
+          SLACK_MEMBER_IDS_MAP: ${{ secrets.SLACK_MEMBER_IDS_MAP }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_REVIEWERS: ${{ toJSON(github.event.pull_request.requested_reviewers.*.login) }}
         run: |
           # Get Slack member ID from GitHub username and fallback to GitHub username.
           get_slack_id() {
               local github_user=$1
-              local slack_id=$(echo "$GITHUB_TO_SLACK_ID_MAP" | jq -r --arg user "$github_user" '.[$user] // empty')
+              local slack_id=$(echo "$SLACK_MEMBER_IDS_MAP" | jq -r --arg user "$github_user" '.[$user] // empty')
               if [ -n "$slack_id" ]; then
                   echo "<@$slack_id>"
                   return
