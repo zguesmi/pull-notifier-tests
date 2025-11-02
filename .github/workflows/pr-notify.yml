@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Send Slack notification
-        uses: ./action.yml
+        uses: ./
         with:
           slack-token: ${{ secrets.SLACK_BOT_TOKEN }}
           channel: ${{ secrets.SLACK_CHANNEL_ID }}
