@@ -1,0 +1,22 @@
+{
+  "name": "pull-notifier-tests",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && ncc build lib/index.js -o dist",
+    "clean": "rm -rf lib dist"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.1",
+    "@slack/web-api": "^7.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@vercel/ncc": "^0.38.4",
+    "typescript": "^5.9.3"
+  },
+  "license": "Apache-2.0",
+  "description": ""
+}
