@@ -1,4 +1,4 @@
-name: Notify Slack when PR Review is Requested
+name: Notify reviewers
 
 on:
   pull_request:
@@ -20,28 +20,28 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":git: PR ready for review - [PoCo]"
+                    "text": ":git: PR ready for review - [${{ github.event.repository.name }}]"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*docs: Update README.md because it's cool `code`* <https://github.com/zguesmi/pull-notifier-tests/pull/2 | #2>"
+                    "text": "*${{ github.event.pull_request.title }}* <${{ github.event.pull_request.html_url }} | #${{ github.event.pull_request.number }}>"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Author*: username\n*Reviewers*: username1, username2"
+                    "text": "*Author*: ${{ github.event.pull_request.user.login }}\n*Reviewers*: ${{ join(github.event.pull_request.requested_reviewers.*.login, ', ') }}"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Description*:\nSome good description going heer `abc`"
+                    "text": "*Description*:\n${{ github.event.pull_request.body }}"
                   }
                 }
               ]
