@@ -8,7 +8,22 @@ inputs:
   channel:
     description: "Slack channel ID (e.g., C12345678)"
     required: true
+  slack-member-ids-map:
+    description: |
+      JSON mapping of GitHub usernames to Slack member IDs.
+      Example: {"github_username1": "U12345678", "github_username2": "U87654321"}
+    required: true
 
 runs:
   using: "node20"
   main: "dist/index.js"
+
+
+# Store a JSON mapping in SLACK_MEMBER_IDS_MAP secret like:
+# {"github_username1": "U12345678", "github_username2": "U87654321"}
+
+
+
+# Note:
+# The PR description (body) is not included because GitHub and Slack use different
+# markdown dialects (e.g., Links are not rendered the same way).

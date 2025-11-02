@@ -6,27 +6,49 @@ type SlackIdsMap = {
     [githubUsername: string]: string | undefined;
 };
 
-const env = {
-    slackMemberIdsMap: process.env.SLACK_MEMBER_IDS_MAP,
-    slackBotToken: process.env.SLACK_BOT_TOKEN,
-    slackChannelId: process.env.SLACK_CHANNEL_ID
+async function run() {
+    const slackBotTokenInput = core.getInput('slack-token');
+    const slackChannelIdInput = core.getInput('channel');
+    const slackMemberIdsMapInput = JSON.parse(
+        core.getInput('slack-member-ids-map') || '{}',
+    ) as SlackIdsMap;
+    if (!slackBotTokenInput) {
+        core.setFailed('SLACK_BOT_TOKEN is not set.');
+        return;
+    }
+    if (!slackChannelIdInput) {
+        core.setFailed('SLACK_CHANNEL_ID is not set.');
+        return;
+    }
+    const slackMessageBlocks = await buildSlackMessage(slackMemberIdsMapInput);
+    await sendSlackMessage(slackBotTokenInput, slackChannelIdInput, slackMessageBlocks);
+    core.info('Slack message sent successfully.');
 }
 
-async function run() {
+async function buildSlackMessage(slackMemberIdsMapInput: SlackIdsMap): Promise<any[]> {
+    // Read GitHub context.
     const githubRepository = github.context.payload.repository;
     const pr = github.context.payload.pull_request;
     if (!githubRepository || !pr) {
         core.setFailed('No context found.');
-        return;
+        throw new Error('No context found.');
     }
     const prAuthorUsername = pr.user?.login;
-    const prReviewersUsernames = pr.requested_reviewers?.map((reviewer: any) => reviewer.login);
-    const prAuthor = await getSlackIdMentionOrGithubUsername(prAuthorUsername);
+    const prReviewersUsernames: string[] = pr.requested_reviewers?.map(
+        (reviewer: any) => reviewer.login,
+    );
+    const prAuthor = await getSlackIdMentionOrGithubUsername(
+        prAuthorUsername,
+        slackMemberIdsMapInput,
+    );
     const prReviewers = await Promise.all(
-        prReviewersUsernames.map(getSlackIdMentionOrGithubUsername),
+        prReviewersUsernames.map((username) =>
+            getSlackIdMentionOrGithubUsername(username, slackMemberIdsMapInput),
+        ),
     );
     core.info(`PR Author: ${prAuthor}`);
     core.info(`PR Reviewers: ${prReviewers.join(', ')}`);
+    // Construct Slack message blocks.
     const slackMessageBlocks = [
         {
             type: 'header',
@@ -55,7 +77,7 @@ async function run() {
         },
     ];
     core.info(`Slack Message: ${JSON.stringify(slackMessageBlocks, null, 2)}`);
-    sendSlackMessage(slackMessageBlocks);
+    return slackMessageBlocks;
 }
 
 /**
@@ -63,29 +85,28 @@ async function run() {
  * @param githubUsername - The GitHub username.
  * @returns - The Slack ID or the GitHub username if not found.
  */
-async function getSlackIdMentionOrGithubUsername(githubUsername: string): Promise<string> {
-    const slackIdsMap: SlackIdsMap = JSON.parse(env.slackMemberIdsMap || '{}');
-    const slackId = slackIdsMap[githubUsername];
+async function getSlackIdMentionOrGithubUsername(
+    githubUsername: string,
+    slackMemberIdsMap: SlackIdsMap,
+): Promise<string> {
+    const slackId = slackMemberIdsMap[githubUsername];
     return slackId ? `<@${slackId}>` : githubUsername;
 }
 
-async function sendSlackMessage(slackMessageBlocks: any[]) {
-    const slackToken = env.slackBotToken;
-    if (!slackToken) {
-        core.setFailed('SLACK_BOT_TOKEN is not set.');
-        return;
-    }
+/**
+ * Send a message to Slack.
+ * @param slackMessageBlocks The Slack message blocks.
+ */
+async function sendSlackMessage(
+    slackToken: string,
+    slackChannelId: string,
+    slackMessageBlocks: any[],
+) {
     const slackClient = new WebClient(slackToken);
-    const slackChannel = env.slackChannelId;
-    if (!slackChannel) {
-        core.setFailed('SLACK_CHANNEL_ID is not set.');
-        return;
-    }
     await slackClient.chat.postMessage({
-        channel: slackChannel,
+        channel: slackChannelId,
         blocks: slackMessageBlocks,
     });
-    core.info('Slack message sent successfully.');
 }
 
 if (require.main === module) {
